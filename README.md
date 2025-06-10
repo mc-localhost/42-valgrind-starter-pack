@@ -1,21 +1,29 @@
 # 42-valgrind-starter-pack
-the simplest setup for checking memory leaks with Valgrind on C/C++ projects at 42
+The simplest setup for checking memory leaks with Valgrind on C/C++ projects at 42
 
-## getting started
-clone the repository and run the setup script:
+## Getting Started (only do it once)
+Clone the repository and run the setup script:
 
+If you're normally using zsh:
+```sh
+git clone https://github.com/mc-localhost/42-valgrind-starter-pack
+cd 42-valgrind-starter-pack
+zsh setup.sh
+```
+
+If you're using bash:
 ```sh
 git clone https://github.com/mc-localhost/42-valgrind-starter-pack
 cd 42-valgrind-starter-pack
 bash setup.sh
-# or if you're using zsh:
-zsh setup.sh
 ```
 
-## then, in any C/C++ project
-launch Docker Desktop app (tick Open Docker Dashboard at startup in Docker Desktop settings to launch it automatically on computer startup)
+## How to Use
+1. Launch Docker Desktop app (tick **Open Docker Dashboard at startup** in **Docker Desktop settings** to launch it automatically on computer startup).
 
-in terminal:
+2. Go to your C/C++ project folder. Or don't. You can do it from Docker shell later as well.
+
+3. In terminal:
 ```sh
 valgrind-docker # opens Docker shell
 make re # re-compiles your project for Linux (if you have a Makefile, obviously)
@@ -23,23 +31,52 @@ valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./your_exec
 exit # exits Docker shell
 ```
 
-in **philosophers** project you might wanna do:
+Always run `make re` to re-compile your project inside Docker, especially if you previously compiled on macOS. This ensures compatibility with the Linux environment.
 
+### Project-Specific Tips
+
+In **philosophers** project you might wanna do:
 ```sh
 valgrind --tool=helgrind ./your_executable
 ```
 
-in **minishell** you might want to play with something like `--track-fds=yes `
+In **minishell** you might want to play with something like `--track-fds=yes`.
 
-## advantages compared to dorker or 200 lines of bash script solutions:
-- usable from any directory - no need to copy project files or cd to osme specific folder
-- you choose which valgrind flags to use since you're basically running the command on your own
-- undestandable Dockerfile and installation script - you can build up based on these on your own
+In **graphical projects** (so_long, miniRT, etc.) you should use something else, as this is a headless environment that cannot display your beautiful 2D/3D stuff.
+In that case and for the exams, consider these alternatives:
 
-if you miss some package, change Dockerfile and run the script again or just do `apt-get` inside your docker shell (but know that it won't be saved once you exit)
+**system leaks**
+```c
+#include <stdlib.h>
 
-## if your Docker Desktop doesn't want to start
-(warning! this is a full reset and it will delete all images you have)
+void	leaks(void)
+{
+	system("leaks your_executable");
+
+}
+int main(void)
+{
+    atexit(leaks);
+    // your code here
+    return (0);
+}
+```
+
+**address sanitizer:**
+```sh
+gcc -fsanitize=address -g your_file.c -o your_executable
+./your_executable
+```
+
+## Advantages Compared to Dorker or 200 Lines of Bash Script Solutions:
+- Usable from any directory — no need to copy project files or cd to some specific folder
+- You choose which valgrind flags to use since you're basically running the command on your own
+- Understandable Dockerfile and installation script — you can build up based on these on your own
+
+If you miss some package, change Dockerfile and run setup.sh again or just do `apt-get` inside your Docker shell (but know that it won't be saved once you exit)
+
+## If Your Docker Desktop Doesn't Want to Start
+**(Warning! This is a full reset and it will delete all images you have)**
 
 ```sh
 rm -rf ~/Library/Containers/com.docker.docker
